@@ -27,6 +27,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <style dangerouslySetInnerHTML={{ __html: `
+          body {
+            background-color: #108da0 !important;
+            overflow: hidden !important;
+          }
+        `}} />
         {/* Meta Pixel Code */}
         <Script id="fb-pixel-base" strategy="afterInteractive">
           {`
@@ -66,7 +72,8 @@ export default function RootLayout({
         </Script>
       </head>
       <body
-        className={`${inter.className} antialiased min-h-screen transition-colors duration-300 loading overflow-hidden`}
+        className={`${inter.className} antialiased min-h-screen transition-colors duration-300 overflow-hidden`}
+        style={{ backgroundColor: '#108da0' }}
       >
         <div className="relative z-10">
           <UserProvider>

@@ -12,7 +12,6 @@ interface DashboardLayoutProps {
 
 // Routes that should show the sidebar
 const dashboardRoutes = [
-  '/',
   '/dashboard',
   '/google-ads',
   '/data-explorer',
@@ -26,7 +25,7 @@ const dashboardRoutes = [
 ]
 
 // Routes that should have no header/sidebar at all
-const landingPageRoutes = ['/start']
+const landingPageRoutes = ['/', '/start']
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user } = useUser()
@@ -42,14 +41,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     if (isLandingPage) {
       document.body.classList.add('landing-page')
       document.body.classList.remove('loading')
+      document.body.style.backgroundColor = '#108da0'
     } else {
       document.body.classList.remove('landing-page')
-      document.body.classList.add('loading')
+      document.body.classList.remove('loading')
+      document.body.style.backgroundColor = 'rgb(255, 255, 255)'
     }
 
     // Cleanup on unmount
     return () => {
       document.body.classList.remove('landing-page')
+      document.body.classList.remove('loading')
     }
   }, [pathname])
 

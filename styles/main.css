@@ -120,15 +120,15 @@ html {
 
 body {
 	color: rgb(var(--foreground-rgb));
-	background: rgb(var(--background-rgb));
+	background: #108da0;
 	font-feature-settings:
 		'rlig' 1,
 		'calt' 1;
 }
 
-/* Landing page styles - transparent background */
+/* Landing page styles - teal background */
 body.landing-page {
-	background: transparent !important;
+	background: #108da0 !important;
 }
 
 * {
@@ -191,7 +191,10 @@ body {
   height: 100%;
   margin: 0;
   overflow: hidden;
+  background: #108da0;
 }
+
+/* Remove loading styles as we handle it differently */
 
 /* Utility classes */
 .animated {
