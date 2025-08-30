@@ -1,0 +1,42 @@
+.form__name {
+  border: 1px solid #e5e7eb; 
+  background-color: white; 
+  border-radius: 9999px; 
+  padding-left: 1.5rem; 
+  padding-right: 1.5rem;
+  padding-top: 0.5rem; 
+  padding-bottom: 0.5rem; 
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); 
+  width: 300px; 
+  max-height: 35px;
+  font-weight: 400;
+  font-size: 18px;
+  color: black;
+}
+
+.form__email {
+  display: flex;
+  gap: 10px;
+  border: 1px solid #e5e7eb; 
+  background-color: white; 
+  border-radius: 9999px; 
+  padding-left: 1.5rem; 
+  padding-right: 1.5rem;
+  padding-top: 0.5rem; 
+  padding-bottom: 0.5rem; 
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); 
+  width: 300px; 
+  max-height: 35px;
+  color: black;
+}
+.manage__button {
+  background-color: #307EF3 !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 400 !important;
+  border-radius: 10px !important;
+  &:hover  {
+    background-color: #507EF3 !important;
+    border: none !important;
+  }
+}

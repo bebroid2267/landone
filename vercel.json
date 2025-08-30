@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "app/api/gpt/**/*": {
+      "maxDuration": 60
+    },
+    "app/api/generate/**": {
+      "maxDuration": 60
+    }
+  }
+}
