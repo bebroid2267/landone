@@ -12,14 +12,8 @@ import '../styles/main.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'roas.dog - Unleash Your Google Ads ROI in 24 Hours',
-  description:
-    'Let roas.dog dig out wasted spend so you can focus on growth. Discover how to optimize your Google Ads campaigns and improve ROI.',
-  icons: {
-    icon: '/roi dog logo.jpg',
-    shortcut: '/roi dog logo.jpg',
-    apple: '/roi dog logo.jpg',
-  },
+  title: 'Taller de Inteligencia Artificial',
+  description: 'Taller de Inteligencia Artificial',
 }
 
 export default function RootLayout({
