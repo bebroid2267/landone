@@ -1,9 +1,15 @@
 {
   "functions": {
-    "app/api/gpt/**/*": {
+    "app/api/proxy-openai/**/*": {
       "maxDuration": 60
     },
-    "app/api/generate/**": {
+    "app/api/proxy-openai-*/*": {
+      "maxDuration": 60
+    },
+    "app/api/proxy-gemini-*/*": {
+      "maxDuration": 60
+    },
+    "app/api/google-ads/ai-*/*": {
       "maxDuration": 60
     }
   }
