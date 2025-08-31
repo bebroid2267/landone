@@ -3,27 +3,38 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Modal } from '@/components/hooks/UI/Modal'
-import { MetaPixelEvents, trackCustomEvent } from '@/lib/fbpixel'
-import { GAEvents, trackCustomEventGA } from '@/lib/gtag'
-import FooterRoi from '@/components/FooterRoi'
-import { useUser } from '@/components/hooks/useUser'
 import { useToast } from '@/components/ui/Toast/ToastContext'
 
 export default function StartPage() {
-  const { user } = useUser()
   const { showToast } = useToast()
-  const [isGoogleAdsModalOpen, setGoogleAdsModalOpen] = useState(false)
-  const [isCallFormOpen, setCallFormOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isWorkshopModalOpen, setWorkshopModalOpen] = useState(false)
   const [isWorkshopSubmitting, setIsWorkshopSubmitting] = useState(false)
-  const [scrollY, setScrollY] = useState(0)
   const [workshopEmail, setWorkshopEmail] = useState('')
-  const [formData, setFormData] = useState({
-    email: '',
-    monthlyAdSpend: '',
-    phoneNumber: '',
-    companyWebsite: ''
-  })
+  const [workshopName, setWorkshopName] = useState('')
+  const [workshopPhone, setWorkshopPhone] = useState('')
+
+  // Format phone number with + and parentheses
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digit characters
+    const digits = value.replace(/\D/g, '')
+    
+    // Limit to 11 digits total (1 country code + 10 phone digits)
+    const limitedDigits = digits.slice(0, 11)
+    
+    // Format based on length
+    if (limitedDigits.length === 0) return ''
+    if (limitedDigits.length <= 1) return `+${limitedDigits}`
+    if (limitedDigits.length <= 4) return `+${limitedDigits.slice(0, 1)} (${limitedDigits.slice(1)}`
+    if (limitedDigits.length <= 7) return `+${limitedDigits.slice(0, 1)} (${limitedDigits.slice(1, 4)}) ${limitedDigits.slice(4)}`
+    if (limitedDigits.length <= 10) return `+${limitedDigits.slice(0, 1)} (${limitedDigits.slice(1, 4)}) ${limitedDigits.slice(4, 7)}-${limitedDigits.slice(7)}`
+    // Maximum format: +1 (234) 567-8900
+    return `+${limitedDigits.slice(0, 1)} (${limitedDigits.slice(1, 4)}) ${limitedDigits.slice(4, 7)}-${limitedDigits.slice(7, 11)}`
+  }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value)
+    setWorkshopPhone(formatted)
+  }
 
   // Get current date in Spanish format
   const getCurrentDateSpanish = () => {
@@ -37,109 +48,7 @@ export default function StartPage() {
     return `${day} de ${month}`
   }
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    console.log('🚀 [START PAGE] handleFormSubmit called!')
-    
-    try {
-      e.preventDefault()
-      console.log('✅ [START PAGE] preventDefault called')
-      
-      setIsSubmitting(true)
-      console.log('✅ [START PAGE] setIsSubmitting(true) called')
-
-      console.log('📝 [START PAGE] Form data:', formData)
-      console.log('👤 [START PAGE] User:', user)
-
-      // Validate required fields on client side
-      if (!formData.email.trim()) {
-        showToast('Please enter your email', 'error')
-        setIsSubmitting(false)
-        return
-      }
-      if (!formData.monthlyAdSpend.trim()) {
-        showToast('Please enter your monthly ad spend', 'error')
-        setIsSubmitting(false)
-        return
-      }
-      if (!formData.phoneNumber.trim()) {
-        showToast('Please enter your phone number', 'error')
-        setIsSubmitting(false)
-        return
-      }
-
-      console.log('✅ [START PAGE] Client validation passed')
-
-      // Track form submission
-      trackCustomEvent(MetaPixelEvents.COMPLEXITY_CONSULTATION, {
-        content_name: 'Contact Form Submitted',
-        content_category: 'Lead Generation',
-        page: 'start',
-        monthly_ad_spend: formData.monthlyAdSpend,
-      })
-      trackCustomEventGA(GAEvents.COMPLEXITY_CONSULTATION, {
-        event_label: 'form_submitted',
-        page: 'start',
-        monthly_ad_spend: formData.monthlyAdSpend,
-      })
-
-      const requestBody = {
-        email: formData.email,
-        monthlyAdSpend: formData.monthlyAdSpend,
-        phoneNumber: formData.phoneNumber,
-        companyWebsite: formData.companyWebsite,
-        userId: user?.id || null,
-        formType: 'talk_to_expert'
-      }
-
-      console.log('📤 [START PAGE] Sending request with body:', requestBody)
-
-      const response = await fetch('/api/telegram-send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      })
-
-      console.log('📥 [START PAGE] Response received. Status:', response.status)
-
-      const result = await response.json()
-      console.log('📄 [START PAGE] Response data:', result)
-
-      if (!response.ok) {
-        console.error('❌ [START PAGE] Response not ok:', result)
-        throw new Error(result.error || 'Failed to submit form')
-      }
-
-      // Reset form and close modal only on success
-      console.log('✅ [START PAGE] Resetting form and closing modal')
-      setFormData({
-        email: '',
-        monthlyAdSpend: '',
-        phoneNumber: '',
-        companyWebsite: ''
-      })
-      
-      showToast('Thank you! Your request has been submitted successfully.', 'success')
-      setCallFormOpen(false)
-      console.log('✅ [START PAGE] Form submission completed successfully')
-      
-    } catch (error) {
-      console.error('❌ [START PAGE] Error in handleFormSubmit:', error)
-      showToast(`Failed to submit form: ${error instanceof Error ? error.message : 'Please try again.'}`, 'error')
-    } finally {
-      console.log('🏁 [START PAGE] Finally block - setting isSubmitting to false')
-      setIsSubmitting(false)
-    }
-  }
 
   const handleWorkshopSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -151,39 +60,30 @@ export default function StartPage() {
         setIsWorkshopSubmitting(false)
         return
       }
-
-      // Track workshop registration
-      trackCustomEvent(MetaPixelEvents.ACCOUNT_CONNECTED, {
-        content_name: 'Workshop Registration',
-        content_category: 'Conversion',
-        page: 'start',
-      })
-      trackCustomEventGA(GAEvents.ACCOUNT_CONNECTED, {
-        event_label: 'workshop_registration',
-        page: 'start',
-      })
-
-      const requestBody = {
-        email: workshopEmail,
-        userId: user?.id || null,
-        formType: 'workshop_registration'
+      if (!workshopName.trim()) {
+        showToast('Por favor ingresa tu nombre completo', 'error')
+        setIsWorkshopSubmitting(false)
+        return
+      }
+      if (!workshopPhone.trim()) {
+        showToast('Por favor ingresa tu número de teléfono', 'error')
+        setIsWorkshopSubmitting(false)
+        return
+      }
+      // Check if phone has at least 10 digits
+      const phoneDigits = workshopPhone.replace(/\D/g, '')
+      if (phoneDigits.length < 10) {
+        showToast('Por favor ingresa un número de teléfono válido (mínimo 10 dígitos)', 'error')
+        setIsWorkshopSubmitting(false)
+        return
       }
 
-      const response = await fetch('/api/telegram-send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to submit registration')
-      }
 
       showToast('¡Registro exitoso! Te enviaremos los detalles del taller.', 'success')
       setWorkshopEmail('')
-      setGoogleAdsModalOpen(false)
+      setWorkshopName('')
+      setWorkshopPhone('')
+      setWorkshopModalOpen(false)
       
     } catch (error) {
       showToast('Error al registrarse. Por favor intenta de nuevo.', 'error')
@@ -192,33 +92,11 @@ export default function StartPage() {
     }
   }
 
-  const handleAuditClick = () => {
-    // Track audit button click
-    trackCustomEvent(MetaPixelEvents.ACCOUNT_CONNECTED, {
-      content_name: 'Free AI Audit Button Clicked',
-      content_category: 'Conversion',
-      page: 'start',
-    })
-    trackCustomEventGA(GAEvents.ACCOUNT_CONNECTED, {
-      event_label: 'free_audit_click',
-      page: 'start',
-    })
-    setGoogleAdsModalOpen(true)
+  const handleWorkshopRegistrationClick = () => {
+    // Open workshop registration modal
+    setWorkshopModalOpen(true)
   }
 
-  const handleCallFormClick = () => {
-    // Track call form button click
-    trackCustomEvent(MetaPixelEvents.COMPLEXITY_CONSULTATION, {
-      content_name: 'Request Call Button Clicked',
-      content_category: 'Lead Generation',
-      page: 'start',
-    })
-    trackCustomEventGA(GAEvents.COMPLEXITY_CONSULTATION, {
-      event_label: 'request_call_click',
-      page: 'start',
-    })
-    setCallFormOpen(true)
-  }
 
   return (
     <main className="w-full text-white" style={{ backgroundColor: '#108da0' }}>
@@ -458,7 +336,7 @@ export default function StartPage() {
               transition={{ duration: 0.6, delay: 1.4 }}
             >
               <button
-                onClick={handleAuditClick}
+                onClick={handleWorkshopRegistrationClick}
                 className="text-white font-bold py-4 px-8 rounded-lg transition-all duration-200 transform hover:scale-105 inline-flex items-center justify-center gap-2 text-center whitespace-nowrap"
                 style={{
                   backgroundColor: '#437fbd',
@@ -676,7 +554,7 @@ export default function StartPage() {
               transition={{ duration: 0.6, delay: 0.8 }}
             >
               <button
-                onClick={handleAuditClick}
+                onClick={handleWorkshopRegistrationClick}
                 className="text-white font-bold py-4 px-8 rounded-lg transition-all duration-200 transform hover:scale-105 inline-flex items-center justify-center gap-2 text-center whitespace-nowrap"
                 style={{
                   backgroundColor: '#437fbd',
@@ -802,7 +680,7 @@ export default function StartPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <button
-                onClick={handleAuditClick}
+                onClick={handleWorkshopRegistrationClick}
                 className="text-white font-bold py-4 px-8 rounded-lg transition-all duration-200 transform hover:scale-105 inline-flex items-center justify-center gap-2 text-center whitespace-nowrap"
                 style={{
                   backgroundColor: '#437fbd',
@@ -1001,7 +879,7 @@ export default function StartPage() {
             transition={{ duration: 0.6, delay: 0.9 }}
           >
             <button
-              onClick={handleAuditClick}
+              onClick={handleWorkshopRegistrationClick}
               className="text-white font-bold py-4 px-8 rounded-lg transition-all duration-200 transform hover:scale-105 inline-flex items-center justify-center gap-2 text-center whitespace-nowrap"
               style={{
                 backgroundColor: '#437fbd',
@@ -1349,7 +1227,7 @@ export default function StartPage() {
             transition={{ duration: 0.6, delay: 0.6 }}
           >
             <button
-              onClick={handleAuditClick}
+              onClick={handleWorkshopRegistrationClick}
               className="text-white font-bold py-4 px-8 rounded-lg transition-all duration-200 transform hover:scale-105 inline-flex items-center justify-center gap-2 text-center whitespace-nowrap"
               style={{
                 backgroundColor: '#437fbd',
@@ -1375,8 +1253,8 @@ export default function StartPage() {
       {/* Workshop Registration Modal */}
       <Modal
         id="workshop-modal-start"
-        isOpen={isGoogleAdsModalOpen}
-        onClose={() => setGoogleAdsModalOpen(false)}
+        isOpen={isWorkshopModalOpen}
+        onClose={() => setWorkshopModalOpen(false)}
         className="z-[9999999]"
       >
         <div 
@@ -1390,7 +1268,7 @@ export default function StartPage() {
         >
           {/* Close button */}
           <button
-            onClick={() => setGoogleAdsModalOpen(false)}
+            onClick={() => setWorkshopModalOpen(false)}
             className="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl font-bold z-10"
           >
             ×
@@ -1427,11 +1305,35 @@ export default function StartPage() {
               <form onSubmit={handleWorkshopSubmit} className="space-y-4">
                 <div>
                   <input
+                    type="text"
+                    placeholder="Nombre completo *"
+                    required
+                    value={workshopName}
+                    onChange={(e) => setWorkshopName(e.target.value)}
+                    maxLength={100}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-md text-black placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  />
+                </div>
+                <div>
+                  <input
                     type="email"
                     placeholder="Escribe tu mejor correo *"
                     required
                     value={workshopEmail}
                     onChange={(e) => setWorkshopEmail(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-md text-black placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  />
+                </div>
+                <div>
+                  <input
+                    type="tel"
+                    placeholder="+1 (234) 567-8900 *"
+                    required
+                    value={workshopPhone}
+                    onChange={handlePhoneChange}
+                    maxLength={25}
                     className="w-full px-4 py-3 border border-gray-300 rounded-md text-black placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   />
@@ -1454,77 +1356,33 @@ export default function StartPage() {
         </div>
       </Modal>
 
-      {/* Call Request Form Modal */}
-      <Modal
-        id="call-form-modal"
-        isOpen={isCallFormOpen}
-        onClose={() => setCallFormOpen(false)}
-        className="z-[9999999]"
-      >
-        <div className="p-6 bg-white rounded-xl max-w-md w-full">
-          <h2 className="text-2xl font-bold mb-6 text-center">Talk to an Expert.</h2>
-          <form onSubmit={handleFormSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email:
-              </label>
-              <input
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Current Monthly Ad Spend:
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.monthlyAdSpend}
-                onChange={(e) => setFormData({ ...formData, monthlyAdSpend: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number:
-              </label>
-              <input
-                type="tel"
-                required
-                value={formData.phoneNumber}
-                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Company Website (Optional):
-              </label>
-              <input
-                type="text"
-                placeholder="example.com"
-                value={formData.companyWebsite}
-                onChange={(e) => setFormData({ ...formData, companyWebsite: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full px-8 py-3 text-lg font-medium text-white bg-black hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors duration-300"
-            >
-              {isSubmitting ? 'SUBMITTING...' : 'REQUEST MY CALL'}
-            </button>
-          </form>
-        </div>
-      </Modal>
-      
       {/* Footer */}
-      <FooterRoi />
+      <footer className="bg-black text-white pt-8 pb-8 px-4" style={{ marginTop: '0' }}>
+        <div className="max-w-6xl mx-auto text-center">
+          {/* Logo */}
+          <div className="mb-6">
+            <img 
+              src="https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/pTy8EEnLSfkgXEP4uL0V/media/ad66bb35-5690-4968-91e7-63b1b486122f.webp" 
+              alt="Mentors Expert" 
+              className="h-16 mx-auto" 
+              loading="lazy" 
+            />
+          </div>
+
+          {/* Copyright and Legal */}
+          <div className="text-sm font-medium text-gray-300 mb-4">
+            <p>© 2025 - Mentors Expert | Todos los derechos reservados | Políticas de Privacidad | Descargo de Responsabilidad</p>
+          </div>
+
+          {/* Facebook Disclaimer */}
+          <div className="text-xs text-gray-300 max-w-4xl mx-auto leading-relaxed">
+            <p>
+              Este sitio no es parte del sitio web de Facebook o Facebook Inc. Adicionalmente, este sitio no está respaldado por Facebook de ninguna manera. FACEBOOK es una marca registrada de Facebook, Inc.
+            </p>
+          </div>
+        </div>
+      </footer>
+
     </main>
   )
 }

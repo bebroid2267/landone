@@ -1,6 +1,0 @@
-export { Button } from './Button'
-export { Input } from './Input'
-export { RadioGroup } from './RadioGroup'
-export { Slider } from './Slider'
-export { TextArea } from './TextArea'
-export { default as Select } from './Select'

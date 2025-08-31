@@ -12,27 +12,7 @@ const nextConfig = {
 		remotePatterns: [
 			{
 				protocol: 'https',
-				hostname: 'cfngdoszuhfiujrgozih.supabase.co',
-			},
-			{
-				protocol: 'https',
-				hostname: 'lh3.googleusercontent.com',
-			},
-			{
-				protocol: 'https',
-				hostname: 'soyfxhyasghymffubbhi.supabase.co',
-			},
-			{
-				protocol: 'https',
-				hostname: 'yralcgckodgemrozhvhn.supabase.co',
-			},
-			{
-				protocol: 'https',
-				hostname: 'epdeijkqhklbeinsbtqx.supabase.co',
-			},
-			{
-				protocol: 'https',
-				hostname: 'placehold.co',
+				hostname: 'images.leadconnectorhq.com',
 			},
 			{
 				protocol: 'https',
@@ -41,19 +21,6 @@ const nextConfig = {
 		],
 		dangerouslyAllowSVG: true,
 		contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-	},
-	async headers() {
-		return [
-			{
-				source: '/api/send-mail',
-				headers: [
-					{ key: 'Access-Control-Allow-Credentials', value: 'true' },
-					{ key: 'Access-Control-Allow-Origin', value: '*' },
-					{ key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
-					{ key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
-				],
-			},
-		]
 	},
 }
 
